@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from kbcstorage.client import Client
 from datetime import datetime
+import requests
 
 # Set up Streamlit page
 st.set_page_config(layout="wide")
@@ -21,9 +22,41 @@ def read_df(table_id, filter_col_name=None, filter_col_value=None, index_col=Non
     else:
         return df
 
+def send_notification(event, job_component_id, job_configuration_id, email_address):
+    url = "https://notification.north-europe.azure.keboola.com/project-subscriptions"
+    
+    payload = {
+        "event": event,
+        "filters": [
+            {
+                "field": "job.component.id",
+                "value": "keboola.orchestrator"
+            },
+            {
+                "field": "job.configuration.id",
+                "value": job_configuration_id
+            }
+        ],
+        "recipient": {
+            "channel": "email",
+            "address": email_address
+        }
+    }
+    
+    headers = {
+        'X-StorageApi-Token': KEBOOLA_TOKEN,
+        'Content-Type': 'application/json'
+    }
+    
+    response = requests.post(url, headers=headers, json=payload)
+    
+    return response.text
 
 
 df = read_df('in.c-notifications.notifications_full')
+aggregated_df = df.groupby(['job_configuration_id', 'event'])['recipient_address'].agg(', '.join).reset_index()
+pivot_df = aggregated_df.pivot(index="job_configuration_id", columns="event", values="recipient_address")
+st.write(pivot_df)
 component_config = read_df('in.c-keboola-ex-telemetry-data-8947841.kbc_component_configuration')
 component_config = component_config[(component_config["kbc_component"]=='Orchestrator') &  (component_config["branch_type"]=='default') &  (component_config["kbc_configuration_is_deleted"]==False)]
 jobs = read_df('in.c-keboola-ex-telemetry-data-8947841.kbc_job')
@@ -70,11 +103,23 @@ filtered_df = configs[
 
 # Display the filtered data
 st.write("## Filtered Data")
-filtered_df[["job-failed,job-succeeded","job-warning","job-processing-long"]] = ''
-edited_data = st.data_editor(filtered_df[["kbc_project_id","kbc_component_configuration","status","job_created_at","job_status","job-failed,job-succeeded","job-warning","job-processing-long"]])
+filtered_df["configuration_id_num"] = filtered_df["configuration_id_num"].astype(int)
+filtered_df = filtered_df.merge(pivot_df,how="left",left_on="configuration_id_num",right_on="job_configuration_id")
+
+edited_data = st.data_editor(filtered_df[["kbc_project_id","kbc_component_configuration","configuration_id_num","status","job_created_at","job_status","job-failed","job-succeeded","job-processing-long"]])
 
 st.write(edited_data)
+original_df_reset = filtered_df.reset_index(drop=True)
+edited_data_reset = edited_data.reset_index(drop=True)
 
-#need a button that will update the notification
+changes = original_df_reset[["kbc_project_id","kbc_component_configuration","configuration_id_num","status","job_created_at","job_status","job-failed","job-succeeded","job-processing-long"]].compare(edited_data_reset)
+changed_indices = changes.index.get_level_values(0).unique()
+edited_rows = edited_data_reset.loc[changed_indices]
 
-#need to figure out the logic for setting up notification
+st.write(edited_rows)
+#TODO need to take only the new changes and push them in a loop
+
+if st.button("Save changes"):
+        response = send_notification(event, job_configuration_id, email_address)
+        st.text("Response from API:")
+        st.text(response)
