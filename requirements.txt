@@ -1,0 +1,6 @@
+hydralit-components==1.0.10
+snowflake
+numpy==1.20.3
+pandas==1.2.5
+streamlit==1.0.0
+kbcstorage
