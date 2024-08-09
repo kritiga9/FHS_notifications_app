@@ -12,7 +12,7 @@ KEBOOLA_STACK = st.secrets["kbc_url"]
 KEBOOLA_TOKEN = st.secrets["kbc_token"]
 keboola_client = Client(KEBOOLA_STACK, KEBOOLA_TOKEN)
 # Function to read DataFrame from Keboola
-#@st.cache_data
+@st.cache_data
 def read_df(table_id, filter_col_name=None, filter_col_value=None, index_col=None, date_col=None, dtype=None):
     keboola_client.tables.export_to_file(table_id, '.')
     table_name = table_id.split(".")[-1]
