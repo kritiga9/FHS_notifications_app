@@ -4,3 +4,5 @@ kbc_job
 notifications_full
 venv
 clean_venv
+components_notif
+flow_jobs
