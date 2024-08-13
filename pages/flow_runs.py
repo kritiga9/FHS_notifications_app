@@ -30,7 +30,7 @@ def run():
 
     # Top filters in columns
     st.subheader("Filters")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2  = st.columns(2)
 
     with col1:
         project_names = flows["project_name"].unique()
@@ -42,6 +42,8 @@ def run():
         with st.expander("Select Status"):
             selected_job = st.multiselect("Select Status", job_status, job_status, label_visibility="collapsed")    
 
+    col3, col4 = st.columns(2)
+    
     with col3:
         flow_status = flows["component_name"].unique()
         with st.expander("Select Flow"):

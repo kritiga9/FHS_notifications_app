@@ -73,7 +73,7 @@ def run():
 
     # Top filters in columns
     st.subheader("Filters")
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2  = st.columns(2)
 
     with col1:
         project_names = result_df["project_name"].unique()
@@ -84,8 +84,10 @@ def run():
         job_status = result_df["status"].unique()
         with st.expander("Select Status"):
             # we should keep active flows as default
-            selected_job = st.multiselect("Select Status", job_status, job_status, label_visibility="hidden")
-
+            selected_job = st.multiselect("Select Status", job_status, 'active', label_visibility="hidden")
+    
+    col3, col4 = st.columns(2)
+    
     with col3:
         flow_status = result_df["last_job_status"].unique()
         with st.expander("Select Flow"):
@@ -106,16 +108,21 @@ def run():
     ]
 
     filtered_notif_df["add_notification"] = False
-    edited_data = st.data_editor(filtered_notif_df[["add_notification","configuration_id_num",'project_name', 'flow_name', 'last_job_status', 'days_since_last_job', 'status', "job-failed","job-succeeded", "job-succeeded-with-warning","job-processing-long", 'link']],hide_index=True)
+    edited_data = st.data_editor(filtered_notif_df[["add_notification",'project_name', 'flow_name', 'last_job_status', 'days_since_last_job', 'status', "job-failed","job-succeeded", "job-succeeded-with-warning","job-processing-long", 'link', "configuration_id_num"]],hide_index=True)
 
     updated_df = edited_data[edited_data["add_notification"]==True]
 
+    # Dropdown to select job status
+    job_status_options = ["job-failed", "job-succeeded", "job-succeeded-with-warning"]
+    selected_job_status = st.selectbox("Select Job Status for Notification", job_status_options)
+
+    # Input field for email ID
     email_id = st.text_input("Enter email")
 
-
+    # Button to save changes and send notifications
     if st.button("Save changes"):
-            for index, row in updated_df.iterrows():
-                job_configuration_id = str(row["configuration_id_num"]) 
-                response = send_notification("job-failed", job_configuration_id, email_id)
-                st.text(f"Response from API for job ID {job_configuration_id}:")
-                st.text(response)
+        for index, row in updated_df.iterrows():
+            job_configuration_id = str(row["configuration_id_num"]) 
+            response = send_notification(selected_job_status, job_configuration_id, email_id)
+            st.text(f"Response from API for job ID {job_configuration_id}:")
+            st.text(response)
