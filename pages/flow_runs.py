@@ -6,8 +6,10 @@ from kbcstorage.client import Client
 def run():  
     # Set up Keboola client
     KEBOOLA_STACK = st.secrets["kbc_url"]
-    KEBOOLA_TOKEN = st.secrets["kbc_token"]
-    keboola_client = Client(KEBOOLA_STACK, KEBOOLA_TOKEN)
+    ORG_PROJECT_ID = st.secrets["org_project_id"]
+    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"][ORG_PROJECT_ID]  # Extract the specific token for project 5539
+
+    keboola_client = Client(KEBOOLA_STACK, KEBOOLA_ORG_TOKEN)
     # Function to read DataFrame from Keboola
     @st.cache_data
     def read_df(table_id, filter_col_name=None, filter_col_value=None, index_col=None, date_col=None, dtype=None):
@@ -91,4 +93,12 @@ def run():
 
     # Display the styled DataFrame in Streamlit
     #need to figure out how to display the name of the flow as display_text
-    st.dataframe(styled_df, column_config={"link":st.column_config.LinkColumn()},hide_index=True)
+    st.dataframe(styled_df, 
+                 column_config={
+                     "project_name": 'Project',
+                     "component_name": 'Flow',
+                     "job_run_id": 'Run ID',
+                     "job_status": 'Job Status',
+                     "job_created_at": 'Job Created At',
+                     "link":st.column_config.LinkColumn("Link", display_text="Click here")},
+                 hide_index=True)
