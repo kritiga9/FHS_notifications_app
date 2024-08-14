@@ -6,7 +6,7 @@ from kbcstorage.client import Client
 def run():  
     # Set up Keboola client
     KEBOOLA_STACK = st.secrets["kbc_url"]
-    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"]
+    KEBOOLA_ORG_TOKEN = st.secrets["kbc_data_token"]
 
     keboola_client = Client(KEBOOLA_STACK, KEBOOLA_ORG_TOKEN)
     # Function to read DataFrame from Keboola

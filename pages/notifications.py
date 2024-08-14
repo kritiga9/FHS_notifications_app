@@ -8,10 +8,10 @@ import requests
 def run():    
     # Set up Keboola client
     KEBOOLA_STACK = st.secrets["kbc_url"]
-    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"]
-    keys_to_exclude = ["kbc_url","kbc_token"]
+    KEBOOLA_ORG_TOKEN = st.secrets["kbc_data_token"]
+    keys_to_exclude = ["kbc_url","kbc_data_token"]
     KEBOOLA_TOKENS = {key: st.secrets[key] for key in st.secrets if key not in keys_to_exclude}
-    
+
     keboola_client = Client(KEBOOLA_STACK, KEBOOLA_ORG_TOKEN)
     # Function to read DataFrame from Keboola
     @st.cache_data
