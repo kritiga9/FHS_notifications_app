@@ -8,9 +8,9 @@ import requests
 def run():    
     # Set up Keboola client
     KEBOOLA_STACK = st.secrets["kbc_url"]
-    ORG_PROJECT_ID = st.secrets["org_project_id"]
-    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"][ORG_PROJECT_ID] # Extract the specific token for ORG project 
-    KEBOOLA_TOKENS = st.secrets["kbc_token"] #Dictionary
+    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"]
+    keys_to_exclude = ["kbc_url","kbc_token"]
+    KEBOOLA_TOKENS = {key: st.secrets[key] for key in st.secrets if key not in keys_to_exclude}
     
     keboola_client = Client(KEBOOLA_STACK, KEBOOLA_ORG_TOKEN)
     # Function to read DataFrame from Keboola
@@ -53,8 +53,10 @@ def run():
         }
         
         response = requests.post(url, headers=headers, json=payload)
-        
-        return response.text
+        if response.status_code == 201:
+            return "Success"
+        else:
+            return f"Error: {response.text}"
 
 
 
@@ -125,7 +127,7 @@ def run():
                                                     'last_job_status', 'days_since_last_job', 'status', 
                                                     "job-failed","job-succeeded", "job-succeeded-with-warning",
                                                     "job-processing-long", 'link', "configuration_id_num", 
-                                                    "project_id"]].style.map(status_lj_color, subset=["last_job_status"]),
+                                                    "project_id"]],
                                  column_order=("add_notification",'project_name', 'flow_name', 
                                                     'last_job_status', #'days_since_last_job', 
                                                     'status', 
@@ -161,5 +163,4 @@ def run():
             job_configuration_id = str(row["configuration_id_num"]) 
             project_id = row["project_id"]  # Change: Retrieve project_id for the current row
             response = send_notification(selected_job_status, job_configuration_id, email_id, project_id)  # Change: Pass project_id to send_notification
-            st.text(f"Response from API for job ID {job_configuration_id}:")
             st.text(response)

@@ -6,8 +6,7 @@ from kbcstorage.client import Client
 def run():  
     # Set up Keboola client
     KEBOOLA_STACK = st.secrets["kbc_url"]
-    ORG_PROJECT_ID = st.secrets["org_project_id"]
-    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"][ORG_PROJECT_ID]  # Extract the specific token for project 5539
+    KEBOOLA_ORG_TOKEN = st.secrets["kbc_token"]
 
     keboola_client = Client(KEBOOLA_STACK, KEBOOLA_ORG_TOKEN)
     # Function to read DataFrame from Keboola
@@ -66,16 +65,8 @@ def run():
     ]
     filtered_df = filtered_df[["project_name","component_name","job_run_id","job_status","job_created_at", "link"]]
 
-    # Kritiga, below is a commented code to turn links into clickable text, 
-    # but it won't work with pretty st.dataframe
-
-
     # Display the filtered data
     st.write("## Filtered Data")
-    # filtered_df["configuration_id_num"] = filtered_df["configuration_id_num"].astype(int)
-    #filtered_df = filtered_df.merge(pivot_df,how="left",left_on="configuration_id_num",right_on="job_configuration_id")
-
-    #edited_data = st.data_editor(filtered_df[["project_name","component_name","job_run_id","job_status","job_created_at"]])
 
     # Function to apply conditional formatting
     def highlight_status(val):
