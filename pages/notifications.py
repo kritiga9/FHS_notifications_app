@@ -105,8 +105,8 @@ def run():
     
     with col3:
         flow_status = result_df["last_job_status"].unique()
-        with st.expander("Select Flow"):
-            selected_status = st.multiselect("Last Job Status", flow_status, flow_status, label_visibility="hidden")    
+        with st.expander("Select Last Job Status"):
+            selected_status = st.multiselect("Select Last Job Status", flow_status, flow_status, label_visibility="hidden")    
 
     with col4:
         failed_job = result_df["job-failed"].unique()
