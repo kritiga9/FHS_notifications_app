@@ -25,7 +25,7 @@ def run():
             return df
 
     def send_notification(event, job_configuration_id, email_address, project_id):
-        url = 'https://connection.keboola.com/'
+        url = 'https://notification.keboola.com/project-subscriptions'
         
         keboola_token = KEBOOLA_TOKENS.get(str(project_id))
         
