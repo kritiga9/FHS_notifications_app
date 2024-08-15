@@ -25,7 +25,7 @@ def run():
             return df
 
     def send_notification(event, job_configuration_id, email_address, project_id):
-        url = "https://notification.north-europe.azure.keboola.com/project-subscriptions"
+        url = KEBOOLA_STACK
         
         keboola_token = KEBOOLA_TOKENS.get(str(project_id))
         
