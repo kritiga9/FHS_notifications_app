@@ -25,7 +25,7 @@ def run():
             return df
 
     def send_notification(event, job_configuration_id, email_address, project_id):
-        url = "https://notification.north-europe.azure.keboola.com/project-subscriptions"
+        url = "https://notification.keboola.com/project-subscriptions"
         
         keboola_token = KEBOOLA_TOKENS.get(str(project_id))
         
@@ -61,11 +61,19 @@ def run():
     st.title("Notifications")
     notifications = read_df('out.c-notifications.components_notif')
 
+    # Define the expected columns based on events
+    expected_columns = ["job-failed", "job-succeeded", "job-succeeded-with-warning", "job-processing-long"]
+
     # Pivot the DataFrame
     pivot_df = notifications.pivot_table(index=['project_name', 'flow_name'], 
                             columns='event', 
                             values='recipient_address', 
                             aggfunc=lambda x: ', '.join(x) if x.notnull().any() else '').reset_index()
+
+    # Check for missing columns and add them with empty values if necessary
+    for col in expected_columns:
+        if col not in pivot_df.columns:
+            pivot_df[col] = ''
 
     # Get the columns to preserve (including flows without notifications)
     preserve_columns = notifications[['project_name',"configuration_id_num", 'flow_name', 'last_job_status', 'days_since_last_job', 'status', 'link', 'project_id',]].drop_duplicates()
@@ -95,7 +103,7 @@ def run():
     
     with col3:
         flow_status = result_df["last_job_status"].unique()
-        with st.expander("Select Flow"):
+        with st.expander("Select Last Job Status"):
             selected_status = st.multiselect("Last Job Status", flow_status, flow_status, label_visibility="hidden")    
 
     with col4:
